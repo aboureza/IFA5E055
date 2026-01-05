@@ -66,6 +66,10 @@ public final class GamePanel extends JPanel {
     private boolean gameOver = false;
     private boolean redPlayerWon = false;
     private boolean bluePlayerWon = false;
+    
+    // Timer state
+    private final long gameStartTime;
+    private static final long GAME_DURATION_MS = 5 * 60 * 1000; // 5 minutes
     private final JButton playAgainButton;
     private final JButton exitToHomeButton;
 
@@ -75,6 +79,7 @@ public final class GamePanel extends JPanel {
         this.gridW = gridW;
         this.gridH = gridH;
         this.cellSize = cellSize;
+        this.gameStartTime = System.currentTimeMillis();
 
         // Buffer is 1 pixel per cell
         this.buffer = new BufferedImage(gridW, gridH, BufferedImage.TYPE_INT_RGB);
@@ -203,6 +208,21 @@ public final class GamePanel extends JPanel {
             bluePlayerWon = true;
             showVictoryScreen();
         }
+        
+        // Check if time is up
+        long elapsed = System.currentTimeMillis() - gameStartTime;
+        if (elapsed >= GAME_DURATION_MS) {
+            gameOver = true;
+            if (team0Count > team1Count) {
+                redPlayerWon = true;
+            } else if (team1Count > team0Count) {
+                bluePlayerWon = true;
+            } else {
+                // Tie - red wins by default
+                redPlayerWon = true;
+            }
+            showVictoryScreen();
+        }
     }
     
     private void showVictoryScreen() {
@@ -237,6 +257,9 @@ public final class GamePanel extends JPanel {
         drawTargets(g2, controller.getTargetX(0), controller.getTargetY(0), 0);
         drawTargets(g2, controller.getTargetX(1), controller.getTargetY(1), 1);
         
+        // Draw timer
+        drawTimer(g2);
+        
         // Draw victory overlay if either player won
         if (gameOver && (redPlayerWon || bluePlayerWon)) {
             drawVictoryOverlay(g2);
@@ -266,6 +289,22 @@ public final class GamePanel extends JPanel {
             int textY = gridH * cellSize / 2 - 50;
             g2.drawString(victoryText, textX, textY);
         }
+    }
+    
+    private void drawTimer(Graphics2D g2) {
+        long elapsed = System.currentTimeMillis() - gameStartTime;
+        long remaining = Math.max(0, GAME_DURATION_MS - elapsed);
+        
+        int minutes = (int) (remaining / 60000);
+        int seconds = (int) ((remaining % 60000) / 1000);
+        
+        String timeText = String.format("%d:%02d", minutes, seconds);
+        
+        g2.setColor(java.awt.Color.WHITE);
+        g2.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 24));
+        
+        // Position timer in top-left corner of game area
+        g2.drawString(timeText, 10, 30);
     }
     
     private void drawProgressBar(Graphics2D g2) {
