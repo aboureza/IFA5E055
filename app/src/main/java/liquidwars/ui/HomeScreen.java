@@ -21,7 +21,10 @@ public final class HomeScreen extends JPanel {
     
     private final JButton playButton;
     private final JButton exitButton;
+    private final JButton toggleAIButton;
     private final BufferedImage mapBackground;
+    
+    private boolean aiEnabled = true;
     
     public HomeScreen() {
         // Load map for background
@@ -35,27 +38,62 @@ public final class HomeScreen extends JPanel {
         // Create background image
         mapBackground = createMapBackground(walls, 160, 100);
         
-        setLayout(new BorderLayout());
+        setLayout(null); // Use absolute positioning
         
         // Title
         JLabel title = new JLabel("Liquid Wars", JLabel.CENTER);
         title.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 48));
         title.setForeground(java.awt.Color.WHITE);
-        add(title, BorderLayout.CENTER);
+        add(title);
         
-        // Button panel
-        JPanel buttonPanel = new JPanel();
-        
+        // Play button
         playButton = new JButton("Play");
         playButton.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 24));
-        buttonPanel.add(playButton);
+        playButton.setBackground(new java.awt.Color(0x202020));
+        playButton.setForeground(java.awt.Color.WHITE);
+        add(playButton);
         
+        // Exit button
         exitButton = new JButton("Exit");
         exitButton.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 24));
+        exitButton.setBackground(new java.awt.Color(0x202020));
+        exitButton.setForeground(java.awt.Color.WHITE);
         exitButton.addActionListener(e -> System.exit(0));
-        buttonPanel.add(exitButton);
+        add(exitButton);
         
-        add(buttonPanel, BorderLayout.SOUTH);
+        // Toggle AI button in corner
+        toggleAIButton = new JButton("Toggle AI Opponent");
+        toggleAIButton.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 12));
+        toggleAIButton.setBackground(new java.awt.Color(0x202020));
+        toggleAIButton.setForeground(java.awt.Color.WHITE);
+        toggleAIButton.addActionListener(e -> {
+            aiEnabled = !aiEnabled;
+            toggleAIButton.setText(aiEnabled ? "AI: ON" : "AI: OFF");
+        });
+        add(toggleAIButton);
+    }
+    
+    @Override
+    public void doLayout() {
+        super.doLayout();
+        
+        int width = getWidth();
+        int height = getHeight();
+        
+        // Position title in upper portion
+        getComponent(0).setBounds(0, height / 4, width, 60);
+        
+        // Position buttons below title (vertically stacked)
+        int buttonY = height / 4 + 100;
+        int buttonWidth = 120;
+        int buttonHeight = 40;
+        int buttonSpacing = 10;
+        
+        playButton.setBounds(width / 2 - buttonWidth / 2, buttonY, buttonWidth, buttonHeight);
+        exitButton.setBounds(width / 2 - buttonWidth / 2, buttonY + buttonHeight + buttonSpacing, buttonWidth, buttonHeight);
+        
+        // Position toggle AI button in top-left corner
+        toggleAIButton.setBounds(10, 10, 160, 30);
     }
     
     private BufferedImage createMapBackground(boolean[][] walls, int w, int h) {
@@ -82,5 +120,9 @@ public final class HomeScreen extends JPanel {
     
     public void setPlayAction(ActionListener action) {
         playButton.addActionListener(action);
+    }
+    
+    public boolean isAIEnabled() {
+        return aiEnabled;
     }
 }

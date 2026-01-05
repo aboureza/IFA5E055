@@ -39,7 +39,7 @@ public class App {
         frame.setVisible(true);
     }
     
-    private static void startGame(JFrame frame)
+    private static void startGame(JFrame frame, boolean aiEnabled)
     {
         // Grid size (in cells)
         // w = number of columns
@@ -76,6 +76,8 @@ public class App {
         // - calls controller.tick() on a timer
         GamePanel panel = new GamePanel(controller, w, h, 6);
         panel.setLeaveAction(e -> returnToHome(frame, panel));
+        panel.setPlayAgainAction(e -> restartGame(frame));
+        panel.setExitToHomeAction(e -> returnToHome(frame, panel));
 
         frame.setContentPane(panel);
 
@@ -86,9 +88,11 @@ public class App {
         frame.setLocationRelativeTo(null);
 
         // Start a simple opponent manager that mirrors the player and randomizes occasionally
-        OpponentAI opponentAI = new OpponentAI(walls);
-        OpponentManager opponentManager = new OpponentManager(controller, opponentAI);
-        opponentManager.start();
+        if (aiEnabled) {
+            OpponentAI opponentAI = new OpponentAI(walls);
+            OpponentManager opponentManager = new OpponentManager(controller, opponentAI);
+            opponentManager.start();
+        }
 
         // Start the simulation loop (timer)
         panel.startLoop();
@@ -99,9 +103,13 @@ public class App {
         showHomeScreen(frame);
     }
     
+    private static void restartGame(JFrame frame) {
+        startGame(frame, true); // Default to AI enabled for restart
+    }
+    
     private static void showHomeScreen(JFrame frame) {
         HomeScreen homeScreen = new HomeScreen();
-        homeScreen.setPlayAction(e -> startGame(frame));
+        homeScreen.setPlayAction(e -> startGame(frame, homeScreen.isAIEnabled()));
         
         frame.setContentPane(homeScreen);
         frame.setSize(800, 600);
