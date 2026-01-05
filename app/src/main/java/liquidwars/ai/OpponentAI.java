@@ -19,11 +19,14 @@ import java.util.function.LongSupplier;
 public final class OpponentAI {
 
     public static final long DEFAULT_RANDOM_INTERVAL_MS = 5000L;
+    // How long a chosen random target persists before reverting to mirrored behavior
+    public static final long DEFAULT_RANDOM_DURATION_MS = 2000L;
 
     private final boolean[][] walls; // walls[y][x]
     private final int width;
     private final int height;
     private final long randomIntervalMillis;
+    private final long randomDurationMillis;
     private final Random rnd;
     private final LongSupplier clock;
 
@@ -33,10 +36,17 @@ public final class OpponentAI {
     public record Target(int x, int y) {}
 
     public OpponentAI(boolean[][] walls) {
-        this(walls, DEFAULT_RANDOM_INTERVAL_MS, new Random(), System::currentTimeMillis);
+        this(walls, DEFAULT_RANDOM_INTERVAL_MS, DEFAULT_RANDOM_DURATION_MS, new Random(), System::currentTimeMillis);
     }
 
     public OpponentAI(boolean[][] walls, long randomIntervalMillis, Random rnd, LongSupplier clock) {
+        this(walls, randomIntervalMillis, DEFAULT_RANDOM_DURATION_MS, rnd, clock);
+    }
+
+    /**
+     * Full constructor with configurable randomization interval and duration
+     */
+    public OpponentAI(boolean[][] walls, long randomIntervalMillis, long randomDurationMillis, Random rnd, LongSupplier clock) {
         Objects.requireNonNull(walls, "walls");
         Objects.requireNonNull(rnd, "rnd");
         Objects.requireNonNull(clock, "clock");
@@ -52,12 +62,21 @@ public final class OpponentAI {
 
         this.walls = walls;
         this.randomIntervalMillis = randomIntervalMillis;
+        this.randomDurationMillis = randomDurationMillis;
         this.rnd = rnd;
         this.clock = clock;
 
         // Start counting from now so the first random event occurs after the interval
         this.lastRandomizeMillis = clock.getAsLong();
+
+        // No current random target initially
+        this.currentRandomTarget = null;
+        this.randomExpiryMillis = Long.MIN_VALUE;
     }
+
+    // Currently active random target and its expiry (exclusive)
+    private Target currentRandomTarget;
+    private long randomExpiryMillis;
 
     /**
      * Compute the next target for the opponent given the player's target.
@@ -68,11 +87,24 @@ public final class OpponentAI {
     public Target nextTarget(int playerTx, int playerTy) {
         long now = clock.getAsLong();
 
+        // If a random target is currently active and not expired, keep returning it
+        if (currentRandomTarget != null && now < randomExpiryMillis) {
+            return currentRandomTarget;
+        }
+
+        // If the active random target expired, clear it and continue to mirror logic
+        if (currentRandomTarget != null && now >= randomExpiryMillis) {
+            currentRandomTarget = null;
+        }
+
+        // Time to pick a new random target?
         if (now - lastRandomizeMillis >= randomIntervalMillis) {
             Target r = chooseRandomFreeCell();
             // If no free cell exists, fall back to mirrored behaviour
             if (r != null) {
                 lastRandomizeMillis = now;
+                currentRandomTarget = r;
+                randomExpiryMillis = now + randomDurationMillis;
                 return r;
             }
         }
