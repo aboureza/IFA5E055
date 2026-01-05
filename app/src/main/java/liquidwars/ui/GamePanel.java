@@ -3,12 +3,14 @@ package liquidwars.ui;
 import liquidwars.model.Particle;
 import liquidwars.model.World;
 
+import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
@@ -50,6 +52,9 @@ public final class GamePanel extends JPanel {
 
     // Swing timer = our "game loop"
     private final Timer timer;
+    
+    // Small leave button in corner
+    private final JButton leaveButton;
 
     public GamePanel (GameController controller, int gridW, int gridH, int cellSize)
     {
@@ -65,6 +70,12 @@ public final class GamePanel extends JPanel {
         // Window size = grid size times cell size
         setPreferredSize(new Dimension(gridW * cellSize, gridH * cellSize));
         setFocusable(true);
+        setLayout(null); // Use absolute positioning
+        
+        // Small leave button in top-right corner
+        leaveButton = new JButton("Leave");
+        leaveButton.setSize(60, 25);
+        add(leaveButton);
 
         // FPS:
         // 33 ms~ 30 fps
@@ -77,6 +88,17 @@ public final class GamePanel extends JPanel {
         MouseHandler mh = new MouseHandler();
         addMouseListener(mh);
         addMouseMotionListener(mh);
+    }
+    
+    @Override
+    public void doLayout() {
+        super.doLayout();
+        // Position leave button in top-right corner with small margin
+        leaveButton.setLocation(getWidth() - leaveButton.getWidth() - 10, 10);
+    }
+    
+    public void setLeaveAction(ActionListener action) {
+        leaveButton.addActionListener(action);
     }
 
     
@@ -91,7 +113,7 @@ public final class GamePanel extends JPanel {
      * We draw the buffer (scale up) then draw target markers on top
      */
     @Override
-    protected void paintComponent (Graphics g)
+    protected void paintComponent(Graphics g)
     {
         super.paintComponent(g);
 
@@ -108,6 +130,50 @@ public final class GamePanel extends JPanel {
         // Draw targets on top (so they are visible)
         drawTargets(g2, controller.getTargetX(0), controller.getTargetY(0), 0);
         drawTargets(g2, controller.getTargetX(1), controller.getTargetY(1), 1);
+        
+        // Draw progress bar at bottom
+        drawProgressBar(g2, w);
+    }
+    
+    private void drawProgressBar(Graphics2D g2, World world) {
+        int team0Count = 0;
+        int team1Count = 0;
+        
+        // Count particles for each team
+        for (int y = 0; y < gridH; y++) {
+            for (int x = 0; x < gridW; x++) {
+                Particle p = world.get(x, y);
+                if (p != null) {
+                    if (p.teamId() == 0) team0Count++;
+                    else if (p.teamId() == 1) team1Count++;
+                }
+            }
+        }
+        
+        int totalCount = team0Count + team1Count;
+        if (totalCount == 0) return;
+        
+        // Progress bar dimensions
+        int barHeight = 20;
+        int barY = getHeight() - barHeight - 5;
+        int barWidth = getWidth() - 20;
+        int barX = 10;
+        
+        // Calculate widths
+        int team0Width = (team0Count * barWidth) / totalCount;
+        int team1Width = barWidth - team0Width;
+        
+        // Draw team 0 (red) portion
+        g2.setColor(java.awt.Color.RED);
+        g2.fillRect(barX, barY, team0Width, barHeight);
+        
+        // Draw team 1 (blue) portion
+        g2.setColor(java.awt.Color.BLUE);
+        g2.fillRect(barX + team0Width, barY, team1Width, barHeight);
+        
+        // Draw border
+        g2.setColor(java.awt.Color.WHITE);
+        g2.drawRect(barX, barY, barWidth, barHeight);
     }
 
     /**
@@ -206,5 +272,9 @@ public final class GamePanel extends JPanel {
                 controller.setTarget(1, gx, gy);
             }
         }
+    }
+    
+    public void stopGame() {
+        timer.stop();
     }
 }
