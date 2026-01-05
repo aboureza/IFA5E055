@@ -27,7 +27,8 @@ public class OpponentAITest {
         walls[0][0] = true; walls[1][1] = true;
 
         AtomicLong clock = new AtomicLong(0);
-        OpponentAI ai = new OpponentAI(walls, 5000, new Random(42), clock::get);
+        // Use a short duration for tests to make assertions easier
+        OpponentAI ai = new OpponentAI(walls, 5000, 2000, new Random(42), clock::get);
 
         // Initially not time yet -> mirrored
         OpponentAI.Target t1 = ai.nextTarget(1, 1);
@@ -40,9 +41,15 @@ public class OpponentAITest {
         // random target must not be a wall
         assertFalse(walls[t2.y()][t2.x()]);
 
-        // Immediately after random pick, it should not pick another random (mirrored expected)
+        // Immediately after random pick (within duration), should keep random target
         OpponentAI.Target t3 = ai.nextTarget(1, 1);
-        assertEquals(4 - 1 - 1, t3.x());
+        assertEquals(t2.x(), t3.x());
+        assertEquals(t2.y(), t3.y());
+
+        // After duration expiry it should revert to mirrored
+        clock.addAndGet(2001);
+        OpponentAI.Target t4 = ai.nextTarget(1, 1);
+        assertEquals(4 - 1 - 1, t4.x());
     }
 
     @Test
