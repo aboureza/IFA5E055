@@ -4,6 +4,7 @@ import liquidwars.model.Particle;
 import liquidwars.model.World;
 import liquidwars.ui.GameController;
 import liquidwars.ui.GamePanel;
+import liquidwars.ui.HomeScreen;
 import liquidwars.ai.OpponentAI;
 import liquidwars.ai.OpponentManager;
 
@@ -26,8 +27,19 @@ public class App {
     
     public static void main(String[] args)
     {
-        // Always start Swing UI on the Event Dispact Thread
-        SwingUtilities.invokeLater(() ->
+        SwingUtilities.invokeLater(() -> showHomeScreen());
+    }
+    
+    private static void showHomeScreen()
+    {
+        JFrame frame = new JFrame("Liquid Wars");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        
+        showHomeScreen(frame);
+        frame.setVisible(true);
+    }
+    
+    private static void startGame(JFrame frame, boolean aiEnabled)
     {
         // Grid size (in cells)
         // w = number of columns
@@ -63,9 +75,10 @@ public class App {
         // - mouse input
         // - calls controller.tick() on a timer
         GamePanel panel = new GamePanel(controller, w, h, 6);
+        panel.setLeaveAction(e -> returnToHome(frame, panel));
+        panel.setPlayAgainAction(e -> restartGame(frame));
+        panel.setExitToHomeAction(e -> returnToHome(frame, panel));
 
-        JFrame frame = new JFrame("Liquid Wars");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setContentPane(panel);
 
         // pack() uses panel.getPreferredSize() => correct window size for grid
@@ -73,16 +86,36 @@ public class App {
 
         // Center the window screen
         frame.setLocationRelativeTo(null);
-        frame.setVisible(true);
 
         // Start a simple opponent manager that mirrors the player and randomizes occasionally
-        OpponentAI opponentAI = new OpponentAI(walls);
-        OpponentManager opponentManager = new OpponentManager(controller, opponentAI);
-        opponentManager.start();
+        if (aiEnabled) {
+            OpponentAI opponentAI = new OpponentAI(walls);
+            OpponentManager opponentManager = new OpponentManager(controller, opponentAI);
+            opponentManager.start();
+        }
 
         // Start the simulation loop (timer)
         panel.startLoop();
-    });
+    }
+    
+    private static void returnToHome(JFrame frame, GamePanel gamePanel) {
+        gamePanel.stopGame();
+        showHomeScreen(frame);
+    }
+    
+    private static void restartGame(JFrame frame) {
+        startGame(frame, true); // Default to AI enabled for restart
+    }
+    
+    private static void showHomeScreen(JFrame frame) {
+        HomeScreen homeScreen = new HomeScreen();
+        homeScreen.setPlayAction(e -> startGame(frame, homeScreen.isAIEnabled()));
+        
+        frame.setContentPane(homeScreen);
+        frame.setSize(800, 600);
+        frame.setLocationRelativeTo(null);
+        frame.revalidate();
+        frame.repaint();
     }
 
     /**
