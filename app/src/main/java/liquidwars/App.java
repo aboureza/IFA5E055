@@ -4,6 +4,8 @@ import liquidwars.model.Particle;
 import liquidwars.model.World;
 import liquidwars.ui.GameController;
 import liquidwars.ui.GamePanel;
+import liquidwars.ai.OpponentAI;
+import liquidwars.ai.OpponentManager;
 
 import java.io.IOException;
 
@@ -72,6 +74,11 @@ public class App {
         // Center the window screen
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
+
+        // Start a simple opponent manager that mirrors the player and randomizes occasionally
+        OpponentAI opponentAI = new OpponentAI(walls);
+        OpponentManager opponentManager = new OpponentManager(controller, opponentAI);
+        opponentManager.start();
 
         // Start the simulation loop (timer)
         panel.startLoop();
