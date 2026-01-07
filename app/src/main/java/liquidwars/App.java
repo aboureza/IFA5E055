@@ -74,7 +74,7 @@ public class App {
         // - rendering
         // - mouse input
         // - calls controller.tick() on a timer
-        GamePanel panel = new GamePanel(controller, w, h, 6);
+        GamePanel panel = new GamePanel(controller, w, h, 6, aiEnabled);
         panel.setLeaveAction(e -> returnToHome(frame, panel));
         panel.setPlayAgainAction(e -> restartGame(frame));
         panel.setExitToHomeAction(e -> returnToHome(frame, panel));

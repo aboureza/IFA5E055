@@ -13,6 +13,8 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
@@ -70,15 +72,20 @@ public final class GamePanel extends JPanel {
     // Timer state
     private final long gameStartTime;
     private static final long GAME_DURATION_MS = 5 * 60 * 1000; // 5 minutes
+    
+    // AI and keyboard control
+    private final boolean aiEnabled;
+    private final boolean[] keysPressed = new boolean[256]; // Track key states
     private final JButton playAgainButton;
     private final JButton exitToHomeButton;
 
-    public GamePanel (GameController controller, int gridW, int gridH, int cellSize)
+    public GamePanel (GameController controller, int gridW, int gridH, int cellSize, boolean aiEnabled)
     {
         this.controller = controller;
         this.gridW = gridW;
         this.gridH = gridH;
         this.cellSize = cellSize;
+        this.aiEnabled = aiEnabled;
         this.gameStartTime = System.currentTimeMillis();
 
         // Buffer is 1 pixel per cell
@@ -130,11 +137,22 @@ public final class GamePanel extends JPanel {
         
         add(gameArea, BorderLayout.CENTER);
         add(progressPanel, BorderLayout.SOUTH);
+        
+        // Keyboard handler for WASD when AI is disabled
+        if (!aiEnabled) {
+            KeyHandler kh = new KeyHandler();
+            addKeyListener(kh);
+            setFocusable(true);
+            requestFocusInWindow();
+        }
 
         // FPS: 33 ms~ 30 fps
         this.timer = new Timer(33, e -> {
             if (!gameOver) {
                 controller.tick();  // update simulation only if not game over
+            }
+            if (!aiEnabled) {
+                updateKeyboardMovement(); // Update WASD movement every frame
             }
             checkGameOver();
             repaint();          // redraw
@@ -236,6 +254,9 @@ public final class GamePanel extends JPanel {
     public void startLoop()
     {
         timer.start();
+        if (!aiEnabled) {
+            requestFocusInWindow(); // Ensure focus for keyboard input
+        }
     }
 
     /**
@@ -271,7 +292,7 @@ public final class GamePanel extends JPanel {
         g2.setColor(new java.awt.Color(0, 0, 0, 150));
         g2.fillRect(0, 0, gridW * cellSize, gridH * cellSize);
         
-        // Victory text based on winner
+        // Victory text based on winner and AI mode
         if (redPlayerWon) {
             g2.setColor(java.awt.Color.RED);
             g2.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 72));
@@ -280,14 +301,41 @@ public final class GamePanel extends JPanel {
             int textX = (gridW * cellSize - textWidth) / 2;
             int textY = gridH * cellSize / 2 - 50;
             g2.drawString(victoryText, textX, textY);
+            
+            // Add team name for local play
+            if (!aiEnabled) {
+                g2.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 36));
+                String teamText = "Red Team Wins";
+                int teamWidth = g2.getFontMetrics().stringWidth(teamText);
+                int teamX = (gridW * cellSize - teamWidth) / 2;
+                g2.drawString(teamText, teamX, textY + 60);
+            }
         } else if (bluePlayerWon) {
             g2.setColor(java.awt.Color.BLUE);
-            g2.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 48));
-            String victoryText = "RUN BACK TO YOUR MOMMY LOSER";
-            int textWidth = g2.getFontMetrics().stringWidth(victoryText);
-            int textX = (gridW * cellSize - textWidth) / 2;
-            int textY = gridH * cellSize / 2 - 50;
-            g2.drawString(victoryText, textX, textY);
+            
+            if (aiEnabled) {
+                // AI mode - show taunt message
+                g2.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 48));
+                String victoryText = "RUN BACK TO YOUR MOMMY LOSER";
+                int textWidth = g2.getFontMetrics().stringWidth(victoryText);
+                int textX = (gridW * cellSize - textWidth) / 2;
+                int textY = gridH * cellSize / 2 - 50;
+                g2.drawString(victoryText, textX, textY);
+            } else {
+                // Local play - show BOOYAH + team name
+                g2.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 72));
+                String victoryText = "BOOYAH";
+                int textWidth = g2.getFontMetrics().stringWidth(victoryText);
+                int textX = (gridW * cellSize - textWidth) / 2;
+                int textY = gridH * cellSize / 2 - 50;
+                g2.drawString(victoryText, textX, textY);
+                
+                g2.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 36));
+                String teamText = "Blue Team Wins";
+                int teamWidth = g2.getFontMetrics().stringWidth(teamText);
+                int teamX = (gridW * cellSize - teamWidth) / 2;
+                g2.drawString(teamText, teamX, textY + 60);
+            }
         }
     }
     
@@ -449,5 +497,40 @@ public final class GamePanel extends JPanel {
     
     public void stopGame() {
         timer.stop();
+    }
+    
+    // Keyboard handler for WASD controls
+    private final class KeyHandler extends KeyAdapter {
+        @Override
+        public void keyPressed(KeyEvent e) {
+            if (e.getKeyCode() < keysPressed.length) {
+                keysPressed[e.getKeyCode()] = true;
+            }
+        }
+        
+        @Override
+        public void keyReleased(KeyEvent e) {
+            if (e.getKeyCode() < keysPressed.length) {
+                keysPressed[e.getKeyCode()] = false;
+            }
+        }
+    }
+    
+    private void updateKeyboardMovement() {
+        int currentX = controller.getTargetX(1);
+        int currentY = controller.getTargetY(1);
+        
+        if (keysPressed[KeyEvent.VK_W]) {
+            controller.setTarget(1, currentX, Math.max(0, currentY - 1));
+        }
+        if (keysPressed[KeyEvent.VK_A]) {
+            controller.setTarget(1, Math.max(0, currentX - 1), currentY);
+        }
+        if (keysPressed[KeyEvent.VK_S]) {
+            controller.setTarget(1, currentX, Math.min(gridH - 1, currentY + 1));
+        }
+        if (keysPressed[KeyEvent.VK_D]) {
+            controller.setTarget(1, Math.min(gridW - 1, currentX + 1), currentY);
+        }
     }
 }
