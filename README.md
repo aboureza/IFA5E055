@@ -74,11 +74,11 @@ How to run with updates:
 
 **TODO**
 Refinement:
-Automatic movement of team 2 (also update Compute gradient so that the particles work around the obstacles)
-Add main screen with settings
-Add Timer
-Add percentage bar such as in the game
-Add an end screen (and a leave button on the main game screen)
-Make a 1 to 2 proper maps
+~~Automatic movement of team 2 (also update Compute gradient so that the particles work around the obstacles)~~
+~~Add main screen with settings~~
+~~Add Timer
+~~Add percentage bar such as in the game~~
+~~Add an end screen (and a leave button on the main game screen)~~
+~~Make a 1 to 2 proper maps~~
 
 Debug anything that may seem faulty
