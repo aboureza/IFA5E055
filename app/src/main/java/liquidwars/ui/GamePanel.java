@@ -13,6 +13,8 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
@@ -70,15 +72,19 @@ public final class GamePanel extends JPanel {
     // Timer state
     private final long gameStartTime;
     private static final long GAME_DURATION_MS = 5 * 60 * 1000; // 5 minutes
+    
+    // AI and keyboard control
+    private final boolean aiEnabled;
     private final JButton playAgainButton;
     private final JButton exitToHomeButton;
 
-    public GamePanel (GameController controller, int gridW, int gridH, int cellSize)
+    public GamePanel (GameController controller, int gridW, int gridH, int cellSize, boolean aiEnabled)
     {
         this.controller = controller;
         this.gridW = gridW;
         this.gridH = gridH;
         this.cellSize = cellSize;
+        this.aiEnabled = aiEnabled;
         this.gameStartTime = System.currentTimeMillis();
 
         // Buffer is 1 pixel per cell
@@ -130,6 +136,14 @@ public final class GamePanel extends JPanel {
         
         add(gameArea, BorderLayout.CENTER);
         add(progressPanel, BorderLayout.SOUTH);
+        
+        // Keyboard handler for WASD when AI is disabled
+        if (!aiEnabled) {
+            KeyHandler kh = new KeyHandler();
+            addKeyListener(kh);
+            setFocusable(true);
+            requestFocusInWindow();
+        }
 
         // FPS: 33 ms~ 30 fps
         this.timer = new Timer(33, e -> {
@@ -236,6 +250,9 @@ public final class GamePanel extends JPanel {
     public void startLoop()
     {
         timer.start();
+        if (!aiEnabled) {
+            requestFocusInWindow(); // Ensure focus for keyboard input
+        }
     }
 
     /**
@@ -449,5 +466,21 @@ public final class GamePanel extends JPanel {
     
     public void stopGame() {
         timer.stop();
+    }
+    
+    // Keyboard handler for WASD controls
+    private final class KeyHandler extends KeyAdapter {
+        @Override
+        public void keyPressed(KeyEvent e) {
+            int currentX = controller.getTargetX(1);
+            int currentY = controller.getTargetY(1);
+            
+            switch (e.getKeyCode()) {
+                case KeyEvent.VK_W -> controller.setTarget(1, currentX, Math.max(0, currentY - 1));
+                case KeyEvent.VK_A -> controller.setTarget(1, Math.max(0, currentX - 1), currentY);
+                case KeyEvent.VK_S -> controller.setTarget(1, currentX, Math.min(gridH - 1, currentY + 1));
+                case KeyEvent.VK_D -> controller.setTarget(1, Math.min(gridW - 1, currentX + 1), currentY);
+            }
+        }
     }
 }
