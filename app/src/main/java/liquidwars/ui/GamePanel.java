@@ -75,6 +75,7 @@ public final class GamePanel extends JPanel {
     
     // AI and keyboard control
     private final boolean aiEnabled;
+    private final boolean[] keysPressed = new boolean[256]; // Track key states
     private final JButton playAgainButton;
     private final JButton exitToHomeButton;
 
@@ -149,6 +150,9 @@ public final class GamePanel extends JPanel {
         this.timer = new Timer(33, e -> {
             if (!gameOver) {
                 controller.tick();  // update simulation only if not game over
+            }
+            if (!aiEnabled) {
+                updateKeyboardMovement(); // Update WASD movement every frame
             }
             checkGameOver();
             repaint();          // redraw
@@ -472,15 +476,34 @@ public final class GamePanel extends JPanel {
     private final class KeyHandler extends KeyAdapter {
         @Override
         public void keyPressed(KeyEvent e) {
-            int currentX = controller.getTargetX(1);
-            int currentY = controller.getTargetY(1);
-            
-            switch (e.getKeyCode()) {
-                case KeyEvent.VK_W -> controller.setTarget(1, currentX, Math.max(0, currentY - 1));
-                case KeyEvent.VK_A -> controller.setTarget(1, Math.max(0, currentX - 1), currentY);
-                case KeyEvent.VK_S -> controller.setTarget(1, currentX, Math.min(gridH - 1, currentY + 1));
-                case KeyEvent.VK_D -> controller.setTarget(1, Math.min(gridW - 1, currentX + 1), currentY);
+            if (e.getKeyCode() < keysPressed.length) {
+                keysPressed[e.getKeyCode()] = true;
             }
+        }
+        
+        @Override
+        public void keyReleased(KeyEvent e) {
+            if (e.getKeyCode() < keysPressed.length) {
+                keysPressed[e.getKeyCode()] = false;
+            }
+        }
+    }
+    
+    private void updateKeyboardMovement() {
+        int currentX = controller.getTargetX(1);
+        int currentY = controller.getTargetY(1);
+        
+        if (keysPressed[KeyEvent.VK_W]) {
+            controller.setTarget(1, currentX, Math.max(0, currentY - 1));
+        }
+        if (keysPressed[KeyEvent.VK_A]) {
+            controller.setTarget(1, Math.max(0, currentX - 1), currentY);
+        }
+        if (keysPressed[KeyEvent.VK_S]) {
+            controller.setTarget(1, currentX, Math.min(gridH - 1, currentY + 1));
+        }
+        if (keysPressed[KeyEvent.VK_D]) {
+            controller.setTarget(1, Math.min(gridW - 1, currentX + 1), currentY);
         }
     }
 }
