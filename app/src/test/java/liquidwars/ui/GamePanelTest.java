@@ -30,8 +30,6 @@ class GamePanelTest {
 
         controller = new GameController(world, walls, W, H);
 
-        // aiEnabled=true so the panel doesn't rely on key focus/listeners.
-        // We still test keyboard movement by calling updateKeyboardMovement via reflection.
         panel = new GamePanel(controller, W, H, CELL, true);
     }
 
