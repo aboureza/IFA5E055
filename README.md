@@ -1,7 +1,7 @@
 # IFA5E055
 Projet de Compléments de Programmation Orientée Objet
 
-**First Milestone - Gradient (Distance Map)**
+**Gradient (Distance Map)**
 Implemented:
 - A BFS-based gradient computation that builds a distance map from one or more target cells
 - Uses 4-neighbourhood movement 
@@ -25,7 +25,21 @@ JUnit tests verifying:
 How to run tests:
 .\gradlew.bat :app:test
 
-**Milestone B — One-step Simulation**
+**Update to Gradient**
+The old gradientComputer uses a BFS-based gradient computation that builds a distance map from one or more target cells
+Now: **MeshGradientComputer**:
+-Computes a distance map like the BFS version, but using 8-neighbourhood (N, S, E, W + diagonals).
+-Produces smoother paths around corners compared to pure 4-neighbour BFS.
+-Keeps the same conventions:
+    -target cells have distance 0
+    -distances propagate outward (shortest path)
+    -obstacles stay unreachable (INF)
+
+Files added:
+    - MeshGradientComputer.java
+    - MeshGradientComputerTest.java
+
+**One-step Simulation**
 
 Implemented a one-tick simulator that updates the grid using the gradient.
 
@@ -44,7 +58,7 @@ Run with:
 .\gradlew.bat :app:test
 
 
-**Milestone C - Swing GUI + Interactive Targets**
+**Swing GUI + Interactive Targets**
 
 Implemented:
 Swing window + rendeering loop
@@ -65,9 +79,11 @@ Visual Style (for now)
 New files :
 App.java - creates map + launched Swing UI
 GameController.java - per-frame logic
+GameControllerTest.java
 GamePanel.java - rendering + mouse input + loop
+GamePanelTest.java
 ColourUtil.java - team colours + energy brightness
-
+ColourUtilTest.java
 How to run with updates:
 .\gradlew.bat :app:run --no-daemon --no-configuration-cache
 
@@ -81,4 +97,5 @@ Refinement:
 ~~Add an end screen (and a leave button on the main game screen)~~
 ~~Make a 1 to 2 proper maps~~
 
-Debug anything that may seem faulty
+**Update 08/01/2026**
+-Noticed in the App.java file that makeWalls[][] was not being locally used so I removed it since we have a Level_Loader now

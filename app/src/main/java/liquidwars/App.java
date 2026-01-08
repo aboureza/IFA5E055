@@ -119,39 +119,6 @@ public class App {
     }
 
     /**
-     * Following method creates walls[y][x]
-     * True means: obstacle (cannot enter)
-     * 
-     * Demo (for now):
-     * - Border walls
-     * - One vertical wall in the middle with a gap
-     */
-    private static boolean[][] makeWalls(int w, int h)
-    {
-        boolean[][] walls = new boolean[h][w];
-
-        // Border walls
-        for (int x = 0; x < w; x++)
-        {
-            walls[0][x] = true;
-            walls[h-1][x] = true;
-        }
-        for (int y = 0; y < h; y++)
-        {
-            walls[y][0] = true;
-            walls[y][w-1] = true;
-        }
-
-        // Middle vertical wall
-        for (int y = h / 2 - 6; y <= h / 2 +6; y++)
-        {
-            walls[y][w / 2] = false;
-        }
-
-        return walls;
-    }
-
-    /**
      * Following method creates the particles[y][x]
      * 
      * Demo (for now):
