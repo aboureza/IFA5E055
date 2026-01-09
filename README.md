@@ -92,10 +92,20 @@ How to run with updates:
 Refinement:
 ~~Automatic movement of team 2 (also update Compute gradient so that the particles work around the obstacles)~~
 ~~Add main screen with settings~~
-~~Add Timer
+~~Add Timer 
 ~~Add percentage bar such as in the game~~
 ~~Add an end screen (and a leave button on the main game screen)~~
 ~~Make a 1 to 2 proper maps~~
+~ button for maps,
+~ button for localplay
+~ net game (multithreading?)
+~ about button
+~ oop features
+~ multithreading
+~ music
+~ fps
+~ upload gitlab
+
 
 **Update 08/01/2026**
 -Noticed in the App.java file that makeWalls[][] was not being locally used so I removed it since we have a Level_Loader now
