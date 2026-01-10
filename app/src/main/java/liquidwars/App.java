@@ -124,36 +124,47 @@ public class App {
      * Demo (for now):
      * - Team 0 mostly left
      * - Team 1 mostly right
-     * - Spare patter so movement is visible and not too crowded
+     * - Equal particle counts for both teams
      */
     private static Particle[][] makeInitialParticles(int w, int h, boolean[][] walls)
     {
         Particle[][] parts = new Particle[h][w];
+        
+        // Collect valid positions for each team
+        java.util.List<int[]> team0Positions = new java.util.ArrayList<>();
+        java.util.List<int[]> team1Positions = new java.util.ArrayList<>();
 
         for (int y = 1; y < h - 1; y++)
         {
             for (int x = 1; x < w - 1; x++)
             {
-                if (walls[y][x]) continue;  // makes sure particles are not inside walls
+                if (walls[y][x]) continue;
 
                 // Left zone for team 0
-                if (x < w / 3)
+                if (x < w / 3 && (x + y) % 3 == 0)
                 {
-                    if ((x + y) % 3 == 0)
-                    {
-                        parts[y][x] = new Particle(0, 6);
-                    }
+                    team0Positions.add(new int[]{x, y});
                 }
 
                 // Right zone for team 1
-                if (x > 2 * w / 3)
+                if (x > 2 * w / 3 && (x + y) % 3 == 0)
                 {
-                    if ((x + y) % 3 == 0)
-                    {
-                        parts[y][x] = new Particle(1, 6);
-                    }
+                    team1Positions.add(new int[]{x, y});
                 }
             }
+        }
+        
+        // Use the smaller count to ensure equal teams
+        int particleCount = Math.min(team0Positions.size(), team1Positions.size());
+        
+        // Place equal number of particles for both teams
+        for (int i = 0; i < particleCount; i++)
+        {
+            int[] pos0 = team0Positions.get(i);
+            parts[pos0[1]][pos0[0]] = new Particle(0, 6);
+            
+            int[] pos1 = team1Positions.get(i);
+            parts[pos1[1]][pos1[0]] = new Particle(1, 6);
         }
 
         return parts;
