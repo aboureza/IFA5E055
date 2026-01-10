@@ -125,10 +125,6 @@ public class App {
                 selectedMapNumber = ms.getSelectedMap(); // Store selected map before returning
                 showHomeScreen(frame);
             });
-            ms.setPlayAction(a -> {
-                selectedMapNumber = ms.getSelectedMap(); // Store selected map before playing
-                startGame(frame, homeScreen.isAIEnabled(), selectedMapNumber);
-            });
             frame.setContentPane(ms);
             frame.revalidate();
             frame.repaint();
