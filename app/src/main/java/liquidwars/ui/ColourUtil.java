@@ -23,13 +23,21 @@ public final class ColourUtil {
     private static final int ENERGY_MAX = 10;
 
     // Base saturated colours per team
-    private static final Color TEAM0 = new Color(255, 60, 60);  // red-ish
-    private static final Color TEAM1 = new Color(60, 120, 255); // blue-ish
+    private static final Color TEAM0 = new Color(255, 60, 60);   // red-ish
+    private static final Color TEAM1 = new Color(60, 120, 255);  // blue-ish
+    private static final Color TEAM2 = new Color(60, 255, 60);   // green-ish
+    private static final Color TEAM3 = new Color(255, 255, 60);  // yellow-ish
     
     // Returns a packed RGB int (0xRRGGBB) for a particle
     public static int particleRGB(int teamId, int energy)
     {
-        Color base = (teamId == 0) ? TEAM0 : TEAM1;
+        Color base = switch (teamId) {
+            case 0 -> TEAM0;
+            case 1 -> TEAM1;
+            case 2 -> TEAM2;
+            case 3 -> TEAM3;
+            default -> TEAM0; // fallback to red
+        };
 
         // Convert energy to 0..1
         double t = (energy - ENERGY_MIN) / (double) (ENERGY_MAX - ENERGY_MIN);

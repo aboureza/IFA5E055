@@ -7,6 +7,8 @@ import liquidwars.ui.GamePanel;
 import liquidwars.ui.HomeScreen;
 import liquidwars.ui.MapSelectScreen;
 import liquidwars.ui.AboutScreen;
+import liquidwars.ui.MultiplayerGameController;
+import liquidwars.ui.MultiplayerGamePanel;
 import liquidwars.ai.OpponentAI;
 import liquidwars.ai.OpponentManager; 
 
@@ -129,12 +131,56 @@ public class App {
             frame.revalidate();
             frame.repaint();
         });
+
+        homeScreen.setMultiplayerAction(e -> startMultiplayerGame(frame));
         
         frame.setContentPane(homeScreen);
         frame.setSize(800, 600);
         frame.setLocationRelativeTo(null);
         frame.revalidate();
         frame.repaint();
+    }
+
+    /**
+     * Start multiplayer game with 4 teams.
+     * Team 0 is controlled by player (mouse).
+     * Teams 1-3 are bots (movement placeholder for now).
+     */
+    private static void startMultiplayerGame(JFrame frame) {
+        // Load map
+        boolean[][] walls;
+        try {
+            walls = LevelLoader.loadWallsFromResourceAnySize("/levels/map1.png");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        int h = walls.length;
+        int w = walls[0].length;
+
+        // Create 4-team particles
+        Particle[][] parts = makeMultiplayerParticles(w, h, walls);
+
+        World world = new World(walls, parts);
+
+        MultiplayerGameController controller = new MultiplayerGameController(world, walls, w, h);
+
+        MultiplayerGamePanel panel = new MultiplayerGamePanel(controller, w, h, 6);
+        panel.setLeaveAction(e -> returnToHomeMultiplayer(frame, panel));
+        panel.setPlayAgainAction(e -> startMultiplayerGame(frame));
+        panel.setExitToHomeAction(e -> returnToHomeMultiplayer(frame, panel));
+
+        frame.setContentPane(panel);
+        frame.pack();
+        frame.setLocationRelativeTo(null);
+
+        // Start simulation
+        panel.startLoop();
+    }
+
+    private static void returnToHomeMultiplayer(JFrame frame, MultiplayerGamePanel panel) {
+        panel.stopGame();
+        showHomeScreen(frame);
     }
 
     /**
@@ -184,6 +230,72 @@ public class App {
             
             int[] pos1 = team1Positions.get(i);
             parts[pos1[1]][pos1[0]] = new Particle(1, 6);
+        }
+
+        return parts;
+    }
+
+    /**
+     * Create initial particles for 4-team multiplayer.
+     * Teams are placed in 4 corners/zones:
+     * - Team 0 (red): top-left
+     * - Team 1 (blue): top-right
+     * - Team 2 (green): bottom-left
+     * - Team 3 (yellow): bottom-right
+     */
+    private static Particle[][] makeMultiplayerParticles(int w, int h, boolean[][] walls) {
+        Particle[][] parts = new Particle[h][w];
+        
+        java.util.List<int[]> team0Positions = new java.util.ArrayList<>();
+        java.util.List<int[]> team1Positions = new java.util.ArrayList<>();
+        java.util.List<int[]> team2Positions = new java.util.ArrayList<>();
+        java.util.List<int[]> team3Positions = new java.util.ArrayList<>();
+
+        for (int y = 1; y < h - 1; y++) {
+            for (int x = 1; x < w - 1; x++) {
+                if (walls[y][x]) continue;
+
+                // Top-left zone for team 0
+                if (x < w / 2 && y < h / 2 && (x + y) % 3 == 0) {
+                    team0Positions.add(new int[]{x, y});
+                }
+
+                // Top-right zone for team 1
+                if (x >= w / 2 && y < h / 2 && (x + y) % 3 == 0) {
+                    team1Positions.add(new int[]{x, y});
+                }
+
+                // Bottom-left zone for team 2
+                if (x < w / 2 && y >= h / 2 && (x + y) % 3 == 0) {
+                    team2Positions.add(new int[]{x, y});
+                }
+
+                // Bottom-right zone for team 3
+                if (x >= w / 2 && y >= h / 2 && (x + y) % 3 == 0) {
+                    team3Positions.add(new int[]{x, y});
+                }
+            }
+        }
+        
+        // Use minimum count to ensure equal teams
+        int particleCount = Math.min(
+            Math.min(team0Positions.size(), team1Positions.size()),
+            Math.min(team2Positions.size(), team3Positions.size())
+        );
+        
+        // Place equal particles for all 4 teams
+        for (int i = 0; i < particleCount; i++) {
+            int[] pos0 = team0Positions.get(i);
+            parts[pos0[1]][pos0[0]] = new Particle(0, 6);
+            
+            int[] pos1 = team1Positions.get(i);
+            parts[pos1[1]][pos1[0]] = new Particle(1, 6);
+            
+            int[] pos2 = team2Positions.get(i);
+            parts[pos2[1]][pos2[0]] = new Particle(2, 6);
+            
+            int[] pos3 = team3Positions.get(i);
+            parts[pos3[1]][pos3[0]] = new Particle(3, 6);
         }
 
         return parts;
