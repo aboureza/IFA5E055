@@ -8,6 +8,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -18,6 +19,9 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.IntStream;
 
 /**
  * GamePanel = the Swing visual component.
@@ -201,19 +205,10 @@ public final class GamePanel extends JPanel {
         if (gameOver) return;
         
         World world = controller.getWorld();
-        int team0Count = 0;
-        int team1Count = 0;
+        Map<Integer, Integer> teamCounts = countParticlesMultithreaded(world);
         
-        // Count particles for each team
-        for (int y = 0; y < gridH; y++) {
-            for (int x = 0; x < gridW; x++) {
-                Particle p = world.get(x, y);
-                if (p != null) {
-                    if (p.teamId() == 0) team0Count++;
-                    else if (p.teamId() == 1) team1Count++;
-                }
-            }
-        }
+        int team0Count = teamCounts.getOrDefault(0, 0);
+        int team1Count = teamCounts.getOrDefault(1, 0);
         
         // Check if one team has 100% of particles
         if (team0Count > 0 && team1Count == 0) {
@@ -356,44 +351,72 @@ public final class GamePanel extends JPanel {
     
     private void drawProgressBar(Graphics2D g2) {
         World world = controller.getWorld();
-        int team0Count = 0;
-        int team1Count = 0;
         
-        // Count particles for each team
-        for (int y = 0; y < gridH; y++) {
-            for (int x = 0; x < gridW; x++) {
-                Particle p = world.get(x, y);
-                if (p != null) {
-                    if (p.teamId() == 0) team0Count++;
-                    else if (p.teamId() == 1) team1Count++;
-                }
-            }
-        }
+        // Get particle counts using multithreading
+        Map<Integer, Integer> teamCounts = countParticlesMultithreaded(world);
         
-        int totalCount = team0Count + team1Count;
+        int totalCount = teamCounts.values().stream().mapToInt(Integer::intValue).sum();
         if (totalCount == 0) return;
         
-        // Progress bar dimensions (use full progress panel)
-        int barHeight = 20;
-        int barY = 5;
+        // Progress bar dimensions
+        int barHeight = 12;
+        int barSpacing = 2;
         int barWidth = progressPanel.getWidth() - 20;
         int barX = 10;
         
-        // Calculate widths
-        int team0Width = (team0Count * barWidth) / totalCount;
-        int team1Width = barWidth - team0Width;
+        // Draw progress bars for each team
+        int currentY = 2;
+        for (Map.Entry<Integer, Integer> entry : teamCounts.entrySet()) {
+            int teamId = entry.getKey();
+            int count = entry.getValue();
+            
+            // Calculate bar width for this team
+            int teamBarWidth = (count * barWidth) / totalCount;
+            
+            // Get team color
+            Color teamColor = getTeamColor(teamId);
+            
+            // Draw filled portion
+            g2.setColor(teamColor);
+            g2.fillRect(barX, currentY, teamBarWidth, barHeight);
+            
+            // Draw empty portion
+            g2.setColor(Color.DARK_GRAY);
+            g2.fillRect(barX + teamBarWidth, currentY, barWidth - teamBarWidth, barHeight);
+            
+            // Draw border
+            g2.setColor(Color.WHITE);
+            g2.drawRect(barX, currentY, barWidth, barHeight);
+            
+            currentY += barHeight + barSpacing;
+        }
+    }
+    
+    private Color getTeamColor(int teamId) {
+        return switch (teamId) {
+            case 0 -> Color.RED;
+            case 1 -> Color.BLUE;
+            case 2 -> Color.GREEN;
+            case 3 -> Color.YELLOW;
+            case 4 -> Color.MAGENTA;
+            case 5 -> Color.CYAN;
+            default -> Color.WHITE;
+        };
+    }
+    
+    private Map<Integer, Integer> countParticlesMultithreaded(World world) {
+        Map<Integer, Integer> teamCounts = new ConcurrentHashMap<>();
         
-        // Draw team 0 (red) portion
-        g2.setColor(java.awt.Color.RED);
-        g2.fillRect(barX, barY, team0Width, barHeight);
+        IntStream.range(0, gridH).parallel().forEach(y -> {
+            for (int x = 0; x < gridW; x++) {
+                Particle p = world.get(x, y);
+                if (p != null) {
+                    teamCounts.merge(p.teamId(), 1, (a, b) -> a + b);
+                }
+            }
+        });
         
-        // Draw team 1 (blue) portion
-        g2.setColor(java.awt.Color.BLUE);
-        g2.fillRect(barX + team0Width, barY, team1Width, barHeight);
-        
-        // Draw border
-        g2.setColor(java.awt.Color.WHITE);
-        g2.drawRect(barX, barY, barWidth, barHeight);
+        return teamCounts;
     }
 
     /**
