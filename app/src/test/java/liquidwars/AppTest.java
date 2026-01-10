@@ -3,6 +3,107 @@
  */
 package liquidwars;
 
+import liquidwars.model.Particle;
+import org.junit.jupiter.api.Test;
+
+import java.lang.reflect.Method;
+
+import static org.junit.jupiter.api.Assertions.*;
+
 class AppTest {
-    
+
+    @Test
+    void makeInitialParticles_respectsWalls_andNeverPlacesOnBorder() throws Exception {
+        int w = 30;
+        int h = 12;
+
+        boolean[][] walls = new boolean[h][w];
+
+        // Put walls exactly on cells that would spawn particles ((x+y)%3==0)
+        // Left zone: x < w/3 => x < 10
+        walls[1][2] = true;  // (2+1)=3 => would spawn team0 if not a wall
+
+        // Right zone: x > 2*w/3 => x > 20
+        walls[2][25] = true; // (25+2)=27 => would spawn team1 if not a wall
+
+        Particle[][] parts = invokeMakeInitialParticles(w, h, walls);
+
+        assertEquals(h, parts.length);
+        assertEquals(w, parts[0].length);
+
+        // Check: no particle placed on border
+        for (int x = 0; x < w; x++) {
+            assertNull(parts[0][x], "No particles on top border");
+            assertNull(parts[h - 1][x], "No particles on bottom border");
+        }
+        for (int y = 0; y < h; y++) {
+            assertNull(parts[y][0], "No particles on left border");
+            assertNull(parts[y][w - 1], "No particles on right border");
+        }
+
+        // Check: the two wall cells remain empty
+        assertNull(parts[1][2], "Wall cell must stay empty (left zone wall)");
+        assertNull(parts[2][25], "Wall cell must stay empty (right zone wall)");
+    }
+
+    @Test
+    void makeInitialParticles_placesOnlyTeam0InLeftZone_onlyTeam1InRightZone_andSpacingIsMod3() throws Exception {
+        int w = 30;
+        int h = 12;
+        boolean[][] walls = new boolean[h][w];
+
+        Particle[][] parts = invokeMakeInitialParticles(w, h, walls);
+
+        int team0Count = 0;
+        int team1Count = 0;
+
+        for (int y = 0; y < h; y++) {
+            for (int x = 0; x < w; x++) {
+                Particle p = parts[y][x];
+                if (p == null) continue;
+
+                // must respect the spacing rule from App.makeInitialParticles
+                assertEquals(0, (x + y) % 3, "Particle must only exist when (x+y)%3==0 at (" + x + "," + y + ")");
+
+                // energy is hardcoded to 6 in App.makeInitialParticles
+                assertEquals(6, p.energy(), "Particle energy should be 6");
+
+                if (x < w / 3) {
+                    assertEquals(0, p.teamId(), "Left zone particles must be team 0");
+                    team0Count++;
+                } else if (x > 2 * w / 3) {
+                    assertEquals(1, p.teamId(), "Right zone particles must be team 1");
+                    team1Count++;
+                } else {
+                    fail("No particles should be placed in the middle zone, but found one at (" + x + "," + y + ")");
+                }
+            }
+        }
+
+        assertTrue(team0Count > 0, "Should place at least one team0 particle");
+        assertTrue(team1Count > 0, "Should place at least one team1 particle");
+    }
+
+    @Test
+    void makeInitialParticles_doesNotPlaceParticleIfSpacingConditionFails() throws Exception {
+        int w = 30;
+        int h = 12;
+        boolean[][] walls = new boolean[h][w];
+
+        Particle[][] parts = invokeMakeInitialParticles(w, h, walls);
+
+        // Choose a cell in the left zone (x < 10) where (x+y)%3 != 0
+        // (1+1)=2 => not divisible by 3
+        assertNull(parts[1][1], "No particle should be placed when (x+y)%3 != 0");
+    }
+
+    // -------------------------
+    // private helpers also found in App
+    // -------------------------
+
+    private static Particle[][] invokeMakeInitialParticles(int w, int h, boolean[][] walls) throws Exception {
+        Method m = App.class.getDeclaredMethod("makeInitialParticles", int.class, int.class, boolean[][].class);
+        m.setAccessible(true);
+        return (Particle[][]) m.invoke(null, w, h, walls);
+    }
 }

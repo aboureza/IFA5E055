@@ -3,7 +3,6 @@ package liquidwars.ui;
 import liquidwars.LevelLoader;
 
 import javax.swing.JButton;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 import javax.swing.ImageIcon;
@@ -32,21 +31,15 @@ public final class HomeScreen extends JPanel {
         setLayout(null); // Use absolute positioning
 
         // Load GIF from resources
-        java.net.URL url = getClass().getResource("/levels/Animation.gif");
+        java.net.URL url = getClass().getResource("/ui/Animation.gif");
         if (url == null) {
-            throw new IllegalArgumentException("Missing resource: /levels/Animation.gif");
+            throw new IllegalArgumentException("Missing resource: /ui/Animation.gif");
         }
         bgGif = new ImageIcon(url);
 
         // Repaint regularly so the GIF animates smoothly
         repaintTimer = new Timer(33, e -> repaint()); // 33 FPS
         repaintTimer.start();
-        
-        // Title
-        JLabel title = new JLabel("Liquid Wars", JLabel.CENTER);
-        title.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 48));
-        title.setForeground(java.awt.Color.WHITE);
-        add(title);
         
         // Play button
         playButton = new JButton("Play");
@@ -83,7 +76,7 @@ public final class HomeScreen extends JPanel {
         int height = getHeight();
         
         // Position title in upper portion
-        getComponent(0).setBounds(0, height / 4, width, 60);
+        getComponent(0).setBounds(0, height / 6, width, 200);
         
         // Position buttons below title (vertically stacked)
         int buttonY = height / 4 + 100;
