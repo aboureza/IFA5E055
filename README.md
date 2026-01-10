@@ -1,7 +1,9 @@
 # IFA5E055
 Projet de Compléments de Programmation Orientée Objet
         **Architecture of the program**
-        ![Diagram](images/graphviz.svg)
+       ![Architecture diagram](images/architecture.png)
+
+
 **Gradient (Distance Map)**
 Implemented:
 - A BFS-based gradient computation that builds a distance map from one or more target cells
