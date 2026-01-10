@@ -29,6 +29,9 @@ import javax.swing.SwingUtilities;
 
 public class App {
     
+    // Store currently selected map (persists across screen navigation)
+    private static int selectedMapNumber = 1;
+    
     public static void main(String[] args)
     {
         SwingUtilities.invokeLater(() -> showHomeScreen());
@@ -109,16 +112,22 @@ public class App {
     }
     
     private static void restartGame(JFrame frame) {
-        startGame(frame, true, 1); // Default to AI enabled and map 1 for restart
+        startGame(frame, true, selectedMapNumber); // Use stored map for restart
     }
     
     private static void showHomeScreen(JFrame frame) {
         HomeScreen homeScreen = new HomeScreen();
-        homeScreen.setPlayAction(e -> startGame(frame, homeScreen.isAIEnabled(), 1));
+        homeScreen.setPlayAction(e -> startGame(frame, homeScreen.isAIEnabled(), selectedMapNumber));
         homeScreen.setMapSelectAction(e -> {
             MapSelectScreen ms = new MapSelectScreen();
-            ms.setBackAction(a -> showHomeScreen(frame));
-            ms.setPlayAction(a -> startGame(frame, homeScreen.isAIEnabled(), ms.getSelectedMap()));
+            ms.setBackAction(a -> {
+                selectedMapNumber = ms.getSelectedMap(); // Store selected map before returning
+                showHomeScreen(frame);
+            });
+            ms.setPlayAction(a -> {
+                selectedMapNumber = ms.getSelectedMap(); // Store selected map before playing
+                startGame(frame, homeScreen.isAIEnabled(), selectedMapNumber);
+            });
             frame.setContentPane(ms);
             frame.revalidate();
             frame.repaint();
@@ -147,10 +156,14 @@ public class App {
      * Teams 1-3 are bots (movement placeholder for now).
      */
     private static void startMultiplayerGame(JFrame frame) {
-        // Load map
+        // Load map (use stored selected map)
         boolean[][] walls;
         try {
-            walls = LevelLoader.loadWallsFromResourceAnySize("/levels/map1.png");
+            try {
+                walls = LevelLoader.loadWallsFromResourceAnySize("/levels/map" + selectedMapNumber + ".png");
+            } catch (IOException e) {
+                walls = LevelLoader.loadWallsFromResourceAnySize("/levels/map" + selectedMapNumber + ".PNG");
+            }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
