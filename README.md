@@ -1,7 +1,7 @@
 # IFA5E055
 Projet de Compléments de Programmation Orientée Objet
         **Architecture of the program**
-       ![Architecture diagram](images/architecture.png)
+       ![Architecture diagram](graphviz.svg)
 
 
 **Gradient (Distance Map)**
