@@ -117,7 +117,8 @@ public final class HomeScreen extends JPanel {
         int height = getHeight();
         
         // Position title in upper portion (moved up slightly to avoid crowding buttons)
-        getComponent(0).setBounds(0, height / 6, width, 60);
+        getComponent(0).setBounds(0, height / 6, width, 200);
+        //getComponent(0).setBounds(0, height / 6, width, 60);
         
         // Position About button in top-right corner
         aboutButton.setBounds(width - 110, 10, 100, 30);

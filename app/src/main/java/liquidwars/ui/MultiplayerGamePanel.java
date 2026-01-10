@@ -218,19 +218,21 @@ public final class MultiplayerGamePanel extends JPanel {
         Color winColor = getTeamColor(winningTeam);
         String teamName = getTeamName(winningTeam);
         
+        // Large team color and wins text
         g2.setColor(winColor);
         g2.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 72));
-        String victoryText = "BOOYAH";
+        String victoryText = teamName.toUpperCase() + " WINS";
         int textWidth = g2.getFontMetrics().stringWidth(victoryText);
         int textX = (gridW * cellSize - textWidth) / 2;
         int textY = gridH * cellSize / 2 - 50;
         g2.drawString(victoryText, textX, textY);
         
-        g2.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 36));
-        String teamText = teamName + " Wins";
-        int teamWidth = g2.getFontMetrics().stringWidth(teamText);
-        int teamX = (gridW * cellSize - teamWidth) / 2;
-        g2.drawString(teamText, teamX, textY + 60);
+        // Slightly smaller message below
+        g2.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 48));
+        String message = "This town isn't big enough for the four of us";
+        int messageWidth = g2.getFontMetrics().stringWidth(message);
+        int messageX = (gridW * cellSize - messageWidth) / 2;
+        g2.drawString(message, messageX, textY + 80);
     }
     
     private void drawTimer(Graphics2D g2) {
@@ -315,7 +317,7 @@ public final class MultiplayerGamePanel extends JPanel {
             for (int x = 0; x < gridW; x++) {
                 Particle p = world.get(x, y);
                 if (p != null) {
-                    teamCounts.merge(p.teamId(), 1, Integer::sum);
+                    teamCounts.merge(p.teamId(), 1, (a, b) -> a + b);
                 }
             }
         });

@@ -10,7 +10,8 @@ import liquidwars.ui.AboutScreen;
 import liquidwars.ui.MultiplayerGameController;
 import liquidwars.ui.MultiplayerGamePanel;
 import liquidwars.ai.OpponentAI;
-import liquidwars.ai.OpponentManager; 
+import liquidwars.ai.OpponentManager;
+import liquidwars.ai.MultiplayerAIManager; 
 
 import java.io.IOException;
 
@@ -186,6 +187,10 @@ public class App {
         frame.setContentPane(panel);
         frame.pack();
         frame.setLocationRelativeTo(null);
+
+        // Start AI for bot teams (1, 2, 3)
+        MultiplayerAIManager aiManager = new MultiplayerAIManager(controller, walls, w, h);
+        aiManager.start();
 
         // Start simulation
         panel.startLoop();
