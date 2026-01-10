@@ -95,7 +95,7 @@ Le code est structuré selon les packages et fichiers suivants (qui ont tous des
         - WASD
 
 **GameController**
-- TLe pont entre l’UI et la simulation :
+- Le pont entre l’UI et la simulation :
     - stocke le World courant
     - stocke les cibles pour chaque équipe
     - calcule les gradients
@@ -149,10 +149,10 @@ Le projet a été construit avec Gradle et compile avec la commande suivante :
 
 **Cartes**
 Les cartes et l’animation GIF ont été dessinées par une amie qui étudie l’art et le design numérique.
-![M1](levels/map1.png) ![M2](levels/map2.png) ![M3](levels/map3.png)
-![M4](levels/map4.png) ![M5](levels/map5.png)
+![M1](app/src/main/resources/levels/map1.png) ![M2](app/src/main/resources/levels/map2.png) ![M3](app/src/main/resources/levels/map3.png)
+![M4](app/src/main/resources/levels/map4.PNG) ![M5](app/src/main/resources/levels/map5.PNG)
 
-![G1](resources/ui/Animation.gif)
+![G1](app/src/main/resources/ui/Animation.gif)
 
 
 

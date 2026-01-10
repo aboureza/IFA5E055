@@ -1,14 +1,11 @@
 package liquidwars.ui;
 
-import liquidwars.LevelLoader;
-
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 import javax.swing.ImageIcon;
 import java.awt.Font;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.event.ActionListener;
 
 
@@ -96,7 +93,6 @@ public final class HomeScreen extends JPanel {
         super.paintComponent(g);
         
         // Draw scaled GIF background
-        Graphics2D g2 = (Graphics2D) g;
         g.drawImage(bgGif.getImage(), 0, 0, getWidth(), getHeight(), this);
     }
     
