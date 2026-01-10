@@ -5,8 +5,10 @@ import liquidwars.model.World;
 import liquidwars.ui.GameController;
 import liquidwars.ui.GamePanel;
 import liquidwars.ui.HomeScreen;
+import liquidwars.ui.MapSelectScreen;
+import liquidwars.ui.AboutScreen;
 import liquidwars.ai.OpponentAI;
-import liquidwars.ai.OpponentManager;
+import liquidwars.ai.OpponentManager; 
 
 import java.io.IOException;
 
@@ -39,24 +41,25 @@ public class App {
         frame.setVisible(true);
     }
     
-    private static void startGame(JFrame frame, boolean aiEnabled)
+    private static void startGame(JFrame frame, boolean aiEnabled, int mapNumber)
     {
-        // Grid size (in cells)
-        // w = number of columns
-        // h = number of rows
-        int w = 160;
-        int h = 100;
-
-        // Simple obstacle layout for a demo run
+        // Load the chosen map (try .png then .PNG)
         boolean [][] walls;
         try
         {
-            walls = LevelLoader.loadWallsFromResource("/levels/map1.png", w, h);
+            try {
+                walls = LevelLoader.loadWallsFromResourceAnySize("/levels/map" + mapNumber + ".png");
+            } catch (IOException e) {
+                walls = LevelLoader.loadWallsFromResourceAnySize("/levels/map" + mapNumber + ".PNG");
+            }
         }
         catch (IOException e)
         {
             throw new RuntimeException(e);
         }
+
+        int h = walls.length;
+        int w = walls[0].length;
 
         // Starting configuration of particles
         Particle[][] parts = makeInitialParticles(w, h, walls);
@@ -104,12 +107,28 @@ public class App {
     }
     
     private static void restartGame(JFrame frame) {
-        startGame(frame, true); // Default to AI enabled for restart
+        startGame(frame, true, 1); // Default to AI enabled and map 1 for restart
     }
     
     private static void showHomeScreen(JFrame frame) {
         HomeScreen homeScreen = new HomeScreen();
-        homeScreen.setPlayAction(e -> startGame(frame, homeScreen.isAIEnabled()));
+        homeScreen.setPlayAction(e -> startGame(frame, homeScreen.isAIEnabled(), 1));
+        homeScreen.setMapSelectAction(e -> {
+            MapSelectScreen ms = new MapSelectScreen();
+            ms.setBackAction(a -> showHomeScreen(frame));
+            ms.setPlayAction(a -> startGame(frame, homeScreen.isAIEnabled(), ms.getSelectedMap()));
+            frame.setContentPane(ms);
+            frame.revalidate();
+            frame.repaint();
+        });
+
+        homeScreen.setAboutAction(e -> {
+            AboutScreen about = new AboutScreen();
+            about.setBackAction(a -> showHomeScreen(frame));
+            frame.setContentPane(about);
+            frame.revalidate();
+            frame.repaint();
+        });
         
         frame.setContentPane(homeScreen);
         frame.setSize(800, 600);
