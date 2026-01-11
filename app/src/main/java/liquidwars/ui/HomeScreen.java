@@ -16,7 +16,6 @@ public final class HomeScreen extends JPanel {
     
     private final JButton playButton;
     private final JButton exitButton;
-    private final JButton toggleAIButton;
     
     // GIF background
     private final ImageIcon bgGif;
@@ -26,7 +25,6 @@ public final class HomeScreen extends JPanel {
     private final JButton localPlayButton;
     private final JButton multiplayerButton;
     private final JButton aboutButton;
-    private final BufferedImage mapBackground; 
     
     private boolean aiEnabled = true;
     
