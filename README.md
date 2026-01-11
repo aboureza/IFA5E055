@@ -150,7 +150,7 @@ Le projet a été construit avec Gradle et compile avec la commande suivante :
 **Cartes**
 Les cartes et l’animation GIF ont été dessinées par une amie qui étudie l’art et le design numérique.
 ![M1](app/src/main/resources/levels/map1.png) ![M2](app/src/main/resources/levels/map2.png) ![M3](app/src/main/resources/levels/map3.png)
-![M4](app/src/main/resources/levels/map4.PNG) ![M5](app/src/main/resources/levels/map5.PNG)
+![M4](app/src/main/resources/levels/map4.png) ![M5](app/src/main/resources/levels/map5.png)
 
 ![G1](app/src/main/resources/ui/Animation.gif)
 
