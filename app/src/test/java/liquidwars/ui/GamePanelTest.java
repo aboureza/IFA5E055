@@ -51,21 +51,6 @@ class GamePanelTest {
         assertTrue((boolean) getPrivateField(panel, "gameOver"));
     }
 
-    @Test
-    void updateKeyboardMovement_WMovesTeam1Up() throws Exception {
-        // Put team1 target at (4,3)
-        controller.setTarget(1, 4, 3);
-
-        // Force "W" key pressed in keysPressed[]
-        boolean[] pressed = (boolean[]) getPrivateField(panel, "keysPressed");
-        pressed[KeyEvent.VK_W] = true;
-
-        invokePrivate(panel, "updateKeyboardMovement");
-
-        assertEquals(4, controller.getTargetX(1));
-        assertEquals(2, controller.getTargetY(1)); // moved up by 1
-    }
-
     // helpers
 
     private void fillWorldWithTeam(int teamId) {

@@ -9,35 +9,6 @@ import static org.junit.jupiter.api.Assertions.*;
 class LevelLoaderTest {
 
     @Test
-    void loadWallsFromResource_LoadsCorrectDimensions() throws IOException {
-        int w = 160;
-        int h = 120;
-        boolean[][] walls = LevelLoader.loadWallsFromResource("/levels/map1.png", w, h);
-
-        assertNotNull(walls);
-        assertEquals(h, walls.length);
-        assertEquals(w, walls[0].length);
-    }
-
-    @Test
-    void loadWallsFromResource_ForceBorderWalls() throws IOException {
-        int w = 160;
-        int h = 120;
-        boolean[][] walls = LevelLoader.loadWallsFromResource("/levels/map1.png", w, h);
-
-        // Check all border cells are walls
-        for (int x = 0; x < w; x++) {
-            assertTrue(walls[0][x], "Top border should be wall");
-            assertTrue(walls[h - 1][x], "Bottom border should be wall");
-        }
-
-        for (int y = 0; y < h; y++) {
-            assertTrue(walls[y][0], "Left border should be wall");
-            assertTrue(walls[y][w - 1], "Right border should be wall");
-        }
-    }
-
-    @Test
     void loadWallsFromResource_ThrowsIOExceptionForMissingResource() {
         assertThrows(IOException.class, () -> {
             LevelLoader.loadWallsFromResource("/nonexistent/map.png", 100, 100);

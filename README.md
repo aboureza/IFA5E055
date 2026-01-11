@@ -1,6 +1,7 @@
 # IFA5E055
 Projet de Compléments de Programmation Orientée Objet
 
+Remarque : je suis un étudiant Erasmus venu ici pour apprendre le français, je m'excuse donc par avance pour les éventuelles erreurs grammaticales dans le texte suivant.
 
 # Presentation: Liquid Wars
 Ce produit est une implémentation simplifiée du jeu Liquid Wars 6. Notre jeu utilise 2 à 4 équipes de particules qui se déplacent à travers une carte de distances (gradient) vers une cible. Les simulations sont effectuées par « ticks » et l’affichage est réalisé via Swing.

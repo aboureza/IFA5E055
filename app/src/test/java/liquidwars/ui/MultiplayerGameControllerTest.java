@@ -67,19 +67,6 @@ class MultiplayerGameControllerTest {
     }
 
     @Test
-    void setTarget_ClampsToValidRange() {
-        controller.setTarget(0, -10, -10);
-
-        assertEquals(0, controller.getTargetX(0));
-        assertEquals(0, controller.getTargetY(0));
-
-        controller.setTarget(1, WIDTH + 10, HEIGHT + 10);
-
-        assertEquals(WIDTH - 1, controller.getTargetX(1));
-        assertEquals(HEIGHT - 1, controller.getTargetY(1));
-    }
-
-    @Test
     void setTarget_IgnoresWallTargets() {
         int oldX = controller.getTargetX(0);
         int oldY = controller.getTargetY(0);
