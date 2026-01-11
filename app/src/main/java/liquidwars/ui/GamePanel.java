@@ -36,9 +36,10 @@ import java.util.stream.IntStream;
  *      - empty cells black
  *      - particles colored by team + energy (brightness)
  *
- * 3) Handle input:
- *      - Mouse move updates team 0 target live
- *      - WASD if AI is dsiabled/ when in local play
+ * 3) Handle mouse input:
+ *      - Left click/drag sets target for team 0
+ *      - Right click/drag sets target for team 1
+ *      - Mouse move updates team 0 target live (optional behavior)
  *
  * Rendering performance:
  * - We draw into a small BufferedImage buffer of size (gridW x gridH)
@@ -141,7 +142,7 @@ public final class GamePanel extends JPanel {
         add(gameArea, BorderLayout.CENTER);
         add(progressPanel, BorderLayout.SOUTH);
         
-        // Keyboard handler for WASD when AI is disabled
+        // Keyboard handler for local play (WASD for red, arrows for blue)
         if (!aiEnabled) {
             KeyHandler kh = new KeyHandler();
             addKeyListener(kh);
@@ -161,7 +162,7 @@ public final class GamePanel extends JPanel {
             repaint();          // redraw
         });
 
-        // Mouse handlers on game area only
+        // Mouse handlers on game area only (disabled in local play)
         MouseHandler mh = new MouseHandler();
         gameArea.addMouseListener(mh);
         gameArea.addMouseMotionListener(mh);
@@ -493,6 +494,7 @@ public final class GamePanel extends JPanel {
         @Override
         public void mouseMoved(MouseEvent e)
         {
+            if (!aiEnabled) return; // Disable mouse move in local play
             int gx = e.getX() / cellSize;
             int gy = e.getY() / cellSize;
             controller.setTarget(0, gx, gy);
@@ -500,6 +502,7 @@ public final class GamePanel extends JPanel {
 
         private void handleMouse (MouseEvent e)
         {
+            if (!aiEnabled) return; // Disable mouse clicks in local play
             int gx = e.getX() / cellSize;
             int gy = e.getY() / cellSize;
 
@@ -508,6 +511,12 @@ public final class GamePanel extends JPanel {
             {
                 controller.setTarget(0, gx, gy);
             }
+
+            // Right click/drag => team 1 target
+            else if (SwingUtilities.isRightMouseButton(e))
+            {
+                controller.setTarget(1, gx, gy);
+            }
         }
     }
     
@@ -515,7 +524,7 @@ public final class GamePanel extends JPanel {
         timer.stop();
     }
     
-    // Keyboard handler for WASD controls
+    // Keyboard handler for local play controls
     private final class KeyHandler extends KeyAdapter {
         @Override
         public void keyPressed(KeyEvent e) {
@@ -533,20 +542,38 @@ public final class GamePanel extends JPanel {
     }
     
     private void updateKeyboardMovement() {
-        int currentX = controller.getTargetX(1);
-        int currentY = controller.getTargetY(1);
-        
+        // Red team (0) uses WASD
+        int redX = controller.getTargetX(0);
+        int redY = controller.getTargetY(0);
+
         if (keysPressed[KeyEvent.VK_W]) {
-            controller.setTarget(1, currentX, Math.max(0, currentY - 1));
+            controller.setTarget(0, redX, Math.max(0, redY - 1));
         }
         if (keysPressed[KeyEvent.VK_A]) {
-            controller.setTarget(1, Math.max(0, currentX - 1), currentY);
+            controller.setTarget(0, Math.max(0, redX - 1), redY);
         }
         if (keysPressed[KeyEvent.VK_S]) {
-            controller.setTarget(1, currentX, Math.min(gridH - 1, currentY + 1));
+            controller.setTarget(0, redX, Math.min(gridH - 1, redY + 1));
         }
         if (keysPressed[KeyEvent.VK_D]) {
-            controller.setTarget(1, Math.min(gridW - 1, currentX + 1), currentY);
+            controller.setTarget(0, Math.min(gridW - 1, redX + 1), redY);
+        }
+
+        // Blue team (1) uses arrow keys
+        int blueX = controller.getTargetX(1);
+        int blueY = controller.getTargetY(1);
+
+        if (keysPressed[KeyEvent.VK_UP]) {
+            controller.setTarget(1, blueX, Math.max(0, blueY - 1));
+        }
+        if (keysPressed[KeyEvent.VK_LEFT]) {
+            controller.setTarget(1, Math.max(0, blueX - 1), blueY);
+        }
+        if (keysPressed[KeyEvent.VK_DOWN]) {
+            controller.setTarget(1, blueX, Math.min(gridH - 1, blueY + 1));
+        }
+        if (keysPressed[KeyEvent.VK_RIGHT]) {
+            controller.setTarget(1, Math.min(gridW - 1, blueX + 1), blueY);
         }
     }
 }
