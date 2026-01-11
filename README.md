@@ -1,7 +1,5 @@
 # IFA5E055
 Projet de Compléments de Programmation Orientée Objet
-        **Architecture of the program**
-       ![Architecture diagram](graphviz.svg)
 
 
 # Presentation: Liquid Wars
