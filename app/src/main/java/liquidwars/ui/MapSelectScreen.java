@@ -76,11 +76,6 @@ public final class MapSelectScreen extends JPanel {
         
         nextMapButton.setBounds(width / 2 - buttonWidth - 10, buttonY, buttonWidth, buttonHeight);
         backButton.setBounds(width / 2 + 10, buttonY, buttonWidth, buttonHeight);
-        
-        // Position play button if it exists
-        if (getComponentCount() > 4) {
-            getComponent(4).setBounds(width / 2 - buttonWidth / 2, buttonY - 60, buttonWidth, buttonHeight);
-        }
     }
     
     private BufferedImage loadMapBackground(int mapNumber) {
@@ -132,15 +127,6 @@ public final class MapSelectScreen extends JPanel {
         backButton.addActionListener(action);
     }
     
-    public void setPlayAction(ActionListener action) {
-        // Add a Play button that uses the selected map
-        JButton playButton = new JButton("Play");
-        playButton.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 20));
-        playButton.setBackground(new java.awt.Color(0x006600));
-        playButton.setForeground(java.awt.Color.WHITE);
-        playButton.addActionListener(action);
-        add(playButton);
-    }
     
     public int getSelectedMap() {
         return selectedMap;
