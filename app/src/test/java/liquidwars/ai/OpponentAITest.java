@@ -76,7 +76,7 @@ public class OpponentAITest {
         AtomicLong clock = new AtomicLong(0);
         OpponentAI ai = new OpponentAI(walls, 5000, new Random(1), clock::get);
 
-        OpponentAI.Target t1 = ai.nextTarget(0, 0);     //not used, why?
+        ai.nextTarget(0, 0);
         // simulate time progressing less than interval
         clock.addAndGet(4999);
         OpponentAI.Target t2 = ai.nextTarget(0, 0);
