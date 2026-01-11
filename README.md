@@ -166,7 +166,6 @@ fichiers:
 
 ficheirs:
 - MultiplayerGameController.java
-- MultiplayerGameControllerTest.java
 
 ### AI
 **OpponentAI**
@@ -213,7 +212,6 @@ files:
 
 fichiers:
 - LevelLoader.java
-- LevelLoaderTest.java
 
 ## Compilation, exécution et tests
 **Compilation**
