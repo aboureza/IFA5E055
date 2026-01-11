@@ -142,13 +142,12 @@ Le projet a été construit avec Gradle et compile avec la commande suivante :
     - ./gradlew.bat :app:test --tests liquidwars.package.TestClass
 
 ## Annexes
-**Diagramme d’interaction
+**Architecture logicielle**
 **
-![Diagram](diagrams/graphviz.svg)
+![Diagram](diagrams/software_arhcitecture.png)
 
-**Architecture de propriété
-**
-![Diagram2](diagrams/)
+**Diagramme de classes détaillé (champs, méthodes et relations d'appel)**
+![Diagram2](diagrams/class_diagram.png)
 
 **Cartes**
 Les cartes et l’animation GIF ont été dessinées par une amie qui étudie l’art et le design numérique.
