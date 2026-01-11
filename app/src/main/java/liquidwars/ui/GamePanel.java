@@ -36,10 +36,9 @@ import java.util.stream.IntStream;
  *      - empty cells black
  *      - particles colored by team + energy (brightness)
  *
- * 3) Handle mouse input:
- *      - Left click/drag sets target for team 0
- *      - Right click/drag sets target for team 1
- *      - Mouse move updates team 0 target live (optional behavior)
+ * 3) Handle input:
+ *      - Mouse move updates team 0 target live
+ *      - WASD if AI is dsiabled/ when in local play
  *
  * Rendering performance:
  * - We draw into a small BufferedImage buffer of size (gridW x gridH)
@@ -508,12 +507,6 @@ public final class GamePanel extends JPanel {
             if (SwingUtilities.isLeftMouseButton(e))
             {
                 controller.setTarget(0, gx, gy);
-            }
-
-            // Right click/drag => team 1 target
-            else if (SwingUtilities.isRightMouseButton(e))
-            {
-                controller.setTarget(1, gx, gy);
             }
         }
     }
