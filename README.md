@@ -1,91 +1,162 @@
 # IFA5E055
 Projet de Compléments de Programmation Orientée Objet
+        **Architecture of the program**
+       ![Architecture diagram](graphviz.svg)
 
-**Gradient (Distance Map)**
-Implemented:
-- A BFS-based gradient computation that builds a distance map from one or more target cells
-- Uses 4-neighbourhood movement 
-- Distances are computed as :
-    - Target cells have distance 0
-    - Neighbour cells increase by +1 per step (shortest-path distance)
-    - Obstacles remain unreachable and are assigned INF
 
-Files added:
-GradientComputer.java
-Implements compute(boolean[][] obstacles, List<Pos> targets) and returns dist[y][x].
-
-GradientComputerTest.java
-
-JUnit tests verifying:
--target distance is 0
--distances grow in layers correctly
--obstacles stay INF
--paths go around obstacles / unreachable cells remain INF (if included)
-
-How to run tests:
-.\gradlew.bat :app:test
-
-**Update to Gradient**
-The old gradientComputer uses a BFS-based gradient computation that builds a distance map from one or more target cells
-Now: **MeshGradientComputer**:
--Computes a distance map like the BFS version, but using 8-neighbourhood (N, S, E, W + diagonals).
--Produces smoother paths around corners compared to pure 4-neighbour BFS.
--Keeps the same conventions:
-    -target cells have distance 0
-    -distances propagate outward (shortest path)
-    -obstacles stay unreachable (INF)
-
-Files added:
+# Presentation: Liquid Wars
+Ce produit est une implémentation simplifiée du jeu Liquid Wars 6. Notre jeu utilise 2 à 4 équipes de particules qui se déplacent à travers une carte de distances (gradient) vers une cible. Les simulations sont effectuées par « ticks » et l’affichage est réalisé via Swing.
+Le code est structuré selon les packages et fichiers suivants (qui ont tous des fichiers de test) :
+- liquidwars.model: état du jeu
+    - World.java
+    - Particle.java
+- liquidwars.algo: calcule les gradients
+    - GradientComputer.java
     - MeshGradientComputer.java
-    - MeshGradientComputerTest.java
+- liquidwars.sim: règles de simulation
+    - StepSimulator.java
+- liquidwars.ui: interface Swing
+    - HomeScreen.java
+    - GamePanel.java
+    - GameController.java
+    - ColourUtil.java
+- liquidwars.ai: adversaire automatisé
+    - OpponentAI.java
+    - OpponentManager.java
+- liquidwars: le jeu compilé
+    - App.java
+    - LevelLoader.java
 
-**One-step Simulation**
+## Fonctionnalités des classes
 
-Implemented a one-tick simulator that updates the grid using the gradient.
+### Models
+**World**
+- Stocke l’état complet du jeu :
+    - obstacles statiques (walls[y][x])
+    - contenu dynamique (particles[y][x])
+- Responsabilités :
+    - accès à la grille (get, set, isWall, vérification des limites)
+    - permet de faire une copie afin que la simulation puisse construire un nouvel état à chaque tick
 
-Each particle chooses an action using the subject’s priority order:
--Move (main → good → acceptable)
--Attack (main → good)
--Transfer energy to ally (main)
--Otherwise do nothing
+**Particle**
+- Représente une unité unique sur la grille, identifiée par teamId et energy
+- Implémentée sous forme de record immuable
+- Les mises à jour se font en créant de nouvelles particules (withEnergy, withTeam)
 
-Added tests verifying:
--correct move / attack / transfer behaviour on small maps
--particle count is preserved
--total energy is preserved
+### Gradient (Carte de distances)
+**GradientComputer**
+- Calcule une carte de distances de plus court chemin depuis une ou plusieurs cellules cibles, en présence d’obstacles
+- Implémentation :
+    - calcul basé sur un parcours en largeur (BFS) qui construit une carte de distances à partir d’une ou plusieurs cellules cibles
+    - utilise un voisinage à 4 directions 
+- Les distances sont calculées ainsi :
+    - les cellules cibles ont une distance de 0
+    - les cellules voisines augmentent de +1 par étape (distance de plus court chemin)
+    - les obstacles restent inatteignables et reçoivent la valeur INF
 
-Run with:
-.\gradlew.bat :app:test
+**MeshGradientComputer**
+- Amélioration de la classe précédente :
+    - calcule une carte de distances comme la version BFS, mais avec un voisinage à 8 directions (N, S, E, O + diagonales)
+    - produit des trajectoires plus lisses autour des coins par rapport à un BFS strict à 4 voisins
+    - conserve les mêmes conventions :
+        - les cellules cibles ont une distance de 0
+        - les distances se propagent vers l’extérieur (plus court chemin)
+        - les obstacles restent inatteignables (INF)
+    
 
+### Simulation
+**StepSimulator**
+- Applique les règles principales du jeu pour un tick : déplacement + combat + énergie
+- Implémente un simulateur « un tick » qui met à jour la grille à l’aide du gradient :
+    - simulation sur une grille avec obstacles
+    - 2 à 4 équipes de particules, énergie bornée (min/max)
+    - chaque particule choisit une action selon l’ordre de priorité du sujet :
+        - se déplacer (principal → bon → acceptable)
+        - attaquer (principal → bon)
+        - sinon ne rien faire
 
-**Swing GUI + Interactive Targets**
+### UI
+**ColourUtil**
+- Convertit (teamId, energy)
+- Le facteur de luminosité dépend de l’énergie :
+    - une faible énergie reste visible
+    - une énergie élevée est plus lumineuse
 
-Implemented:
-Swing window + rendeering loop
+**GamePanel**
+- Écran de jeu : rendu + entrées + boucle de jeu
+- Exécute une boucle via javax.swing.Timer (33 fps) :
+    - appelle controller.tick()
+    - appelle checkGameOver()
+    - appelle repaint()
+- Rendu :
+    - dessine la carte dans une petite BufferedImage
+    - dessine des superpositions : cibles, timer, barre de progression, écran de victoire
+- Entrées :
+    - souris :
+        - suit le curseur
+    - mode clavier local :
+        - WASD
 
-Game loop integration
-- Computes gradient maps using GradientComputer
-- Applies one simulation step using StepSimulator
-- Render the updated grid
+**GameController**
+- Le pont entre l’UI et la simulation :
+    - stocke le World courant
+    - stocke les cibles pour chaque équipe
+    - calcule les gradients
+    - invoque StepSimulator.java
+- Déroulement à chaque tick :
+    1. lire les cibles courantes
+    2. calculer le gradient de l’équipe 0
+    3. calculer le gradient de l’équipe 1
+    4. appeler le simulateur et mettre à jour la référence du monde
 
-Mouse-controlled targets
-- Team 0 will follow mouse cursor
-- for now, Team 1 only follows right click
+**Homescreen**
+- 
 
-Visual Style (for now)
-- Gray walls, empty cells are in black
-- Particles are drawn using a team base colour with brightness based on energy
+### AI
+**OpponentAI**
+- 
 
-New files :
-App.java - creates map + launched Swing UI
-GameController.java - per-frame logic
-GameControllerTest.java
-GamePanel.java - rendering + mouse input + loop
-GamePanelTest.java
-ColourUtil.java - team colours + energy brightness
-ColourUtilTest.java
-How to run with updates:
-.\gradlew.bat :app:run --no-daemon --no-configuration-cache
+**OpponentManager**
+- 
+
+### App
+- 
+
+### Levelloader
+- 
+
+## Compilation, exécution et tests
+**Compilation**
+Le projet a été construit avec Gradle et compile avec la commande suivante :
+    - ./gradlew.bat :app:build
+
+**Exécution**
+- Pour lancer le projet avec Gradle, utiliser la commande suivante :
+    - ./gradlew.bat :app:run
+- Nous avons également lancé le programme en exécutant liquidwars.App depuis l’IDE (VSCode)
+
+**Tests**
+- Pour exécuter les tests et vérifier qu’ils passent correctement :
+    - ./gradlew.bat :app:test
+- Pour exécuter les tests sur des classes spécifiques :
+    - ./gradlew.bat :app:test --tests liquidwars.package.TestClass
+
+## Annexes
+**Diagramme d’interaction
+**
+![Diagram](diagrams/graphviz.svg)
+
+**Architecture de propriété
+**
+![Diagram2](diagrams/)
+
+**Cartes**
+Les cartes et l’animation GIF ont été dessinées par une amie qui étudie l’art et le design numérique.
+![M1](app/src/main/resources/levels/map1.png) ![M2](app/src/main/resources/levels/map2.png) ![M3](app/src/main/resources/levels/map3.png)
+![M4](app/src/main/resources/levels/map4.PNG) ![M5](app/src/main/resources/levels/map5.PNG)
+
+![G1](app/src/main/resources/ui/Animation.gif)
+
 
 
 **TODO**
@@ -106,6 +177,3 @@ Refinement:
 ~ fps
 ~ upload gitlab
 
-
-**Update 08/01/2026**
--Noticed in the App.java file that makeWalls[][] was not being locally used so I removed it since we have a Level_Loader now

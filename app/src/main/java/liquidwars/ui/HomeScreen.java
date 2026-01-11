@@ -1,16 +1,12 @@
 package liquidwars.ui;
 
-import liquidwars.LevelLoader;
-
 import javax.swing.JButton;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.Timer;
+import javax.swing.ImageIcon;
 import java.awt.Font;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.event.ActionListener;
-import java.awt.image.BufferedImage;
-import java.io.IOException;
 
 /**
  * Simple home screen with title and play button over game map background
@@ -19,34 +15,31 @@ public final class HomeScreen extends JPanel {
     
     private final JButton playButton;
     private final JButton exitButton;
+    
+    // GIF background
+    private final ImageIcon bgGif;
+    private final Timer repaintTimer;
     private final JButton mapSelectButton;
     private final JButton vsAIButton;
     private final JButton localPlayButton;
     private final JButton multiplayerButton;
     private final JButton aboutButton;
-    private final BufferedImage mapBackground; 
     
     private boolean aiEnabled = true;
     
     public HomeScreen() {
-        // Load map for background
-        boolean[][] walls;
-        try {
-            walls = LevelLoader.loadWallsFromResource("/levels/map1.png", 160, 100);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        
-        // Create background image
-        mapBackground = createMapBackground(walls, 160, 100);
-        
         setLayout(null); // Use absolute positioning
-        
-        // Title
-        JLabel title = new JLabel("Liquid Wars", JLabel.CENTER);
-        title.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 48));
-        title.setForeground(java.awt.Color.WHITE);
-        add(title);
+
+        // Load GIF from resources
+        java.net.URL url = getClass().getResource("/ui/Animation.gif");
+        if (url == null) {
+            throw new IllegalArgumentException("Missing resource: /ui/Animation.gif");
+        }
+        bgGif = new ImageIcon(url);
+
+        // Repaint regularly so the GIF animates smoothly
+        repaintTimer = new Timer(33, e -> repaint()); // 33 FPS
+        repaintTimer.start();
         
         // Play button
         playButton = new JButton("Play");
@@ -152,26 +145,13 @@ public final class HomeScreen extends JPanel {
         exitButton.setBounds(width / 2 - buttonWidth / 2, exitY, buttonWidth, buttonHeight);
     }
     
-    private BufferedImage createMapBackground(boolean[][] walls, int w, int h) {
-        BufferedImage img = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
-        
-        for (int y = 0; y < h; y++) {
-            for (int x = 0; x < w; x++) {
-                int rgb = walls[y][x] ? 0x202020 : 0x000000; // gray walls, black empty
-                img.setRGB(x, y, rgb);
-            }
-        }
-        
-        return img;
-    }
-    
     @Override
-    protected void paintComponent(Graphics g) {
+    protected void paintComponent (Graphics g)
+    {
         super.paintComponent(g);
         
-        // Draw scaled map background
-        Graphics2D g2 = (Graphics2D) g;
-        g2.drawImage(mapBackground, 0, 0, getWidth(), getHeight(), null);
+        // Draw scaled GIF background
+        g.drawImage(bgGif.getImage(), 0, 0, getWidth(), getHeight(), this);
     }
     
     public void setPlayAction(ActionListener action) {
@@ -199,5 +179,10 @@ public final class HomeScreen extends JPanel {
     
     public boolean isAIEnabled() {
         return aiEnabled;
+    }
+
+    // Stop animation when leaving the home screen
+    public void stopAnimation() {
+        repaintTimer.stop();
     }
 }

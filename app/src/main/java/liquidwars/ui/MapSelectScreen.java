@@ -82,7 +82,7 @@ public final class MapSelectScreen extends JPanel {
         boolean[][] walls;
         try {
             String mapFile;
-            if (mapNumber <= 3) {
+            if (mapNumber <= 5) {
                 mapFile = "/levels/map" + mapNumber + ".png";
             } else {
                 mapFile = "/levels/map" + mapNumber + ".PNG";
