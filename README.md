@@ -1,7 +1,5 @@
 # IFA5E055
 Projet de Compléments de Programmation Orientée Objet
-        **Architecture of the program**
-       ![Architecture diagram](graphviz.svg)
 
 
 # Presentation: Liquid Wars
@@ -110,20 +108,112 @@ Le code est structuré selon les packages et fichiers suivants (qui ont tous des
     4. appeler le simulateur et mettre à jour la référence du monde
 
 **Homescreen**
-- 
+- utilise JButton pour initialiser les boutons
+- Boutons
+    -"Play
+        - commence le jeu avec le mode et la carte sélectionnés (le mode par défaut est vs AI, la carte par défaut = map1)
+    - "Map Select"
+        - entre dans un nouvel écran où l'utilisateur peut choisir parmi les cartes disponibles
+    - "vs AI"
+        - mode utilisateur contre IA
+    - "Local Play"
+        - mode deux joueurs
+    - "Multiplayer"
+        - utilisateur contre IA contre IA contre IA
+    - "Exit" 
+    - "About" 
+        - entre dans un nouvel écran avec des informations sur le jeu
+fichiers:
+- HomeScreen.java
+- HomeScreenTest.java
+
+
+**AboutScreen**
+- écran d'informations simple affichant les crédits en utilisant une disposition fixe
+- contient un bouton "back" qui retourne au Homescreen
+
+fichiers:
+- AboutScreen.java
+- AboutScreenTest.java
+
+**MapSelectScreen**
+- écran dédié pour choisir entre les cartes de jeu
+- accessible via le bouton dans le Homescreen
+- le bouton "Next Map" parcourt les cartes disponibles (1-5)
+- chaque fois qu'une carte est accédée, l'arrière-plan de MapSelectScreen devient cette carte pour l'aperçu
+- le choix de la carte sélectionnée est préservé et retourne la carte sélectionnée au Homescreen
+
+fichiers:
+- MapSelectScreen.java
+- MapSelectScreenTest.java
+
+**MultiplayerGamePanel**
+- rendu du jeu + entrées pour le mode multijoueur
+- le joueur contrôle l'équipe 0 via l'entrée souris, les équipes 1-3 sont contrôlées par l'IA
+- affiche 4 barres de progression, une par équipe
+- conditions de victoire
+- inclut les boutons "Play Again" et "Exit to Home" sur l'écran de victoire
+
+fichiers:
+- MultiplayerGamePanel.java
+- MultiplayerGamePanelTest.java
+
+**MultiplayerGameController**
+- contrôleur pour le mode multijoueur, isolé du GameController à 2 équipes
+- gère l'état du monde et les cibles pour 4 équipes
+- calcule 4 gradients séparés + invoque StepSimulator avec toutes les données d'équipe par tick
+- contraint les coordonnées à l'espace disponible (excluant les murs et la bordure)
+
+ficheirs:
+- MultiplayerGameController.java
+- MultiplayerGameControllerTest.java
 
 ### AI
 **OpponentAI**
-- 
+- reflète la cible du joueur avec une sélection de cible aléatoire toutes les 5 secondes + reste à cet endroit pendant 2 secondes (repli sur la cellule libre la plus proche si la cible est un mur)
+
+files:
+- OpponentAI.java
+- OpponentAITest.java
 
 **OpponentManager**
-- 
+- pilote OpponentAI pour le mode à 2 équipes vs IA
+  
+fichiers:
+- OpponentManager.java
+- OpponentManagerTest.java
+  
+**MultiplayerAIManager**
+- gère trois comportements de bot randomisés pour les équipes 1-3 :
+	- bot1, - reflète l'entrée utilisateur comme en mode vs AI, utilise OpponentAI
+	- bot2, - attaque le joueur ennemi le plus proche
+	- bot3, - reflète le bot 2
+- Les équipes 1-3 alternent entre les 'rôles' (bot1-3) à chaque partie
+- les bots2 et 3 randomisent leurs mouvements plus fréquemment
+- tous les bots randomisent leurs mouvements à des intervalles décalés, aucun mouvement synchronisé
+
+Fichiers:
+- MultiplayerAIManager.java
+- MultiplayerAIManagerTest.java
 
 ### App
-- 
+- contient main()
+- crée le placement initial des particules pour les équipes 0,1
+- respecte les murs et ne place jamais de particules sur les bordures
+
+files:
+- App.java
+- AppTest.java
 
 ### Levelloader
-- 
+- charge les cartes depuis les images PNG et png dans le dossier resources
+- convertit les pixels sombres en murs et les pixels clairs en espace ouvert
+- transforme les cellules de bordure en murs
+- supporte les dimensions d'image fixes et variables (s'adapte aux cartes 2-5 capturées manuellement)
+
+fichiers:
+- LevelLoader.java
+- LevelLoaderTest.java
 
 ## Compilation, exécution et tests
 **Compilation**
@@ -142,18 +232,17 @@ Le projet a été construit avec Gradle et compile avec la commande suivante :
     - ./gradlew.bat :app:test --tests liquidwars.package.TestClass
 
 ## Annexes
-**Diagramme d’interaction
+**Architecture logicielle**
 **
-![Diagram](diagrams/graphviz.svg)
+![Diagram](diagrams/software_arhcitecture.png)
 
-**Architecture de propriété
-**
-![Diagram2](diagrams/)
+**Diagramme de classes détaillé (champs, méthodes et relations d'appel)**
+![Diagram2](diagrams/class_diagram.png)
 
 **Cartes**
 Les cartes et l’animation GIF ont été dessinées par une amie qui étudie l’art et le design numérique.
 ![M1](app/src/main/resources/levels/map1.png) ![M2](app/src/main/resources/levels/map2.png) ![M3](app/src/main/resources/levels/map3.png)
-![M4](app/src/main/resources/levels/map4.PNG) ![M5](app/src/main/resources/levels/map5.PNG)
+![M4](app/src/main/resources/levels/map4.png) ![M5](app/src/main/resources/levels/map5.png)
 
 ![G1](app/src/main/resources/ui/Animation.gif)
 
