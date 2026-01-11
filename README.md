@@ -1,5 +1,8 @@
 # IFA5E055
 Projet de Compléments de Programmation Orientée Objet
+        **Architecture of the program**
+       ![Architecture diagram](graphviz.svg)
+
 
 # Presentation: Liquid Wars
 Ce produit est une implémentation simplifiée du jeu Liquid Wars 6. Notre jeu utilise 2 à 4 équipes de particules qui se déplacent à travers une carte de distances (gradient) vers une cible. Les simulations sont effectuées par « ticks » et l’affichage est réalisé via Swing.
